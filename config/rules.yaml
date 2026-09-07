@@ -1,0 +1,10 @@
+unused_threshold_days: 90
+peer_deviation_threshold_pct: 10.0
+high_risk_resources:
+  - finance_system
+  - student_records
+  - research_data_vault
+  - payroll_system
+require_reason_on_override: true
+require_reason_on_revoke: true
+minimum_peer_sample_size: 2
