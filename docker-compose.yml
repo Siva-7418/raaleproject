@@ -1,0 +1,14 @@
+version: '3.8'
+
+services:
+  access-review-app:
+    build: .
+    container_name: evidence_access_review
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./data:/app/data
+      - ./config:/app/config
+    environment:
+      - PYTHONUNBUFFERED=1
+    restart: unless-stopped
