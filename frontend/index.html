@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Evidence-Based Privilege & Access Review</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Header -->
+    <header class="app-header">
+        <div class="logo-container">
+            <div class="logo-icon">🛡️</div>
+            <div>
+                <h1>Access Evidence Review</h1>
+                <p class="subtitle">Higher Education Privilege & Anomaly Governance</p>
+            </div>
+        </div>
+
+        <div class="header-controls">
+            <!-- Mode Switcher -->
+            <div class="mode-selector">
+                <button id="btn-mode-baseline" class="mode-btn" onclick="setReviewMode('baseline')">
+                    📊 Baseline (Spreadsheet)
+                </button>
+                <button id="btn-mode-prototype" class="mode-btn active" onclick="setReviewMode('prototype')">
+                    🛡️ Evidence Prototype
+                </button>
+            </div>
+
+            <!-- Role Selector -->
+            <div class="role-selector">
+                <label for="role-select">View Role:</label>
+                <select id="role-select" onchange="switchRole(this.value)">
+                    <option value="reviewer">👤 Access Reviewer</option>
+                    <option value="admin">🔒 Compliance Admin</option>
+                </select>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        <!-- Notification Toast -->
+        <div id="toast" class="toast hidden"></div>
+
+        <!-- REVIEWER VIEW -->
+        <section id="view-reviewer" class="view-section">
+            <div class="dashboard-bar">
+                <div class="filter-group">
+                    <label for="dept-filter">Department:</label>
+                    <select id="dept-filter" onchange="loadReviewItems()">
+                        <option value="">All Departments</option>
+                        <option value="Computer Science">Computer Science</option>
+                        <option value="Biology">Biology</option>
+                        <option value="Finance">Finance</option>
+                        <option value="Medicine">Medicine</option>
+                        <option value="Registrar">Registrar</option>
+                        <option value="Astronomy">Astronomy (Collapsed Baseline)</option>
+                    </select>
+                </div>
+
+                <div id="baseline-actions" class="baseline-actions hidden">
+                    <button class="btn btn-warning" onclick="bulkApproveBaseline()">
+                        ⚡ Approve All (Rubber-Stamp Simulation)
+                    </button>
+                </div>
+
+                <div class="summary-stats" id="stats-container">
+                    <!-- Dynamic stat cards -->
+                </div>
+            </div>
+
+            <div class="table-container">
+                <table class="review-table">
+                    <thead>
+                        <tr id="table-headers">
+                            <!-- Headers dynamically injected -->
+                        </tr>
+                    </thead>
+                    <tbody id="review-table-body">
+                        <!-- Items rendered dynamically -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- COMPLIANCE ADMIN VIEW -->
+        <section id="view-admin" class="view-section hidden">
+            <div class="admin-grid">
+                <!-- Rules Configuration Card -->
+                <div class="card admin-card">
+                    <h2>⚙️ Rules Engine Configuration</h2>
+                    <p class="card-desc">Configure dynamic flagging thresholds and risk sensitivity.</p>
+                    
+                    <form id="rules-form" onsubmit="saveRules(event)">
+                        <div class="form-group">
+                            <label for="cfg-unused">Unused Inactivity Threshold (Days):</label>
+                            <input type="number" id="cfg-unused" min="1" max="365" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="cfg-peer-dev">Peer Deviation Flag Threshold (%):</label>
+                            <input type="number" id="cfg-peer-dev" step="0.1" min="0" max="100" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="cfg-high-risk">High-Risk Resources (Comma separated):</label>
+                            <input type="text" id="cfg-high-risk" required>
+                        </div>
+
+                        <div class="form-group checkbox-group">
+                            <label>
+                                <input type="checkbox" id="cfg-req-override">
+                                Require Justification Reason on Override/Flagged Approve
+                            </label>
+                        </div>
+
+                        <div class="form-group checkbox-group">
+                            <label>
+                                <input type="checkbox" id="cfg-req-revoke">
+                                Require Justification Reason on Access Revocation
+                            </label>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary">Save Rules Config</button>
+                    </form>
+                </div>
+
+                <!-- Experiment & Audit Metrics Card -->
+                <div class="card admin-card">
+                    <h2>📈 Experiment Metrics & Blanket-Approval Audit</h2>
+                    <p class="card-desc">Real-time before vs. after rubber-stamp approval analysis.</p>
+
+                    <div class="metrics-grid" id="audit-metrics-container">
+                        <!-- Dynamic metrics -->
+                    </div>
+
+                    <div style="margin-top: 1.5rem;">
+                        <h3>Recent Decision Log with Immutable Evidence Snapshots</h3>
+                        <div class="table-container" style="max-height: 350px;">
+                            <table class="review-table mini-table">
+                                <thead>
+                                    <tr>
+                                        <th>Timestamp</th>
+                                        <th>Mode</th>
+                                        <th>Entitlement</th>
+                                        <th>Decision</th>
+                                        <th>Rubber Stamp?</th>
+                                        <th>Reason</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="audit-table-body">
+                                    <!-- Audit logs -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- EVIDENCE DRAWER MODAL -->
+    <div id="evidence-modal" class="modal hidden">
+        <div class="modal-content drawer-content">
+            <div class="modal-header">
+                <h2>🔍 Entitlement Evidence Breakdown</h2>
+                <button class="close-btn" onclick="closeModal('evidence-modal')">&times;</button>
+            </div>
+            <div class="modal-body" id="modal-evidence-body">
+                <!-- Evidence populated here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- REASON ENTRY MODAL -->
+    <div id="reason-modal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="reason-modal-title">Justification Required</h2>
+                <button class="close-btn" onclick="closeModal('reason-modal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p id="reason-modal-desc">Please provide a clear justification for this decision.</p>
+                <textarea id="reason-text-input" placeholder="Enter rationale here..." rows="4"></textarea>
+                
+                <div class="modal-actions">
+                    <button class="btn btn-secondary" onclick="closeModal('reason-modal')">Cancel</button>
+                    <button class="btn btn-primary" onclick="submitReasonDecision()">Submit Decision</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SNAPSHOT INSPECTOR MODAL -->
+    <div id="snapshot-modal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>📸 Immutable Evidence Snapshot</h2>
+                <button class="close-btn" onclick="closeModal('snapshot-modal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <pre id="snapshot-json-display" class="json-code"></pre>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/js/api.js"></script>
+    <script src="/static/js/app.js"></script>
+</body>
+</html>
